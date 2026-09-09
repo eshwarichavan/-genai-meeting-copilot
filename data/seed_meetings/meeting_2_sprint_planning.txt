@@ -1,0 +1,11 @@
+Eshwari: Sprint 42 planning. We've got three big items in the backlog: the checkout redesign, the payments retry logic, and the notifications cleanup.
+Rahul: I can take the payments retry logic, it's mostly done from last sprint, I just need to add exponential backoff. I'll have it ready by Thursday.
+Eshwari: Perfect. Sneha, are you still picking up the checkout redesign?
+Sneha: Yes, but I want a design review before I start building, since it touches the whole flow.
+Eshwari: Fair, let's put the design review on the calendar for next week. I'll schedule that.
+Sneha: Sounds good.
+Eshwari: Rahul, once payments retry is done, can you also pick up the notifications cleanup? No firm date on that, it's lower priority, just get to it when you can this sprint.
+Rahul: Sure, I'll fit it in after the retry logic.
+Eshwari: One more thing, we need someone to update the sprint board with these three items today so it's visible to the rest of the team.
+Sneha: I'll do that right after this call.
+Eshwari: Great, let's wrap here.

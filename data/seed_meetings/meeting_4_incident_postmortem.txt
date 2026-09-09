@@ -1,0 +1,11 @@
+Eshwari: Postmortem for the payments outage on Sunday. Rahul, can you walk us through the timeline?
+Rahul: Sure. At 3 AM the retry logic we shipped last sprint started retrying failed payments too aggressively, which overloaded the payments gateway. It self-resolved after twenty minutes once the gateway's rate limiter kicked in.
+Eshwari: What's the root cause?
+Rahul: We didn't have a cap on total concurrent retries, only per-request backoff. So under load, retries piled up.
+Eshwari: Rahul, can you add a global concurrency cap to the retry logic and get that out by Friday? This one's high priority.
+Rahul: Friday works, I'll prioritize it over everything else this week.
+Eshwari: We also didn't get paged until customers started complaining on Twitter. Karan, can you set up a proper alert on payment failure rate so we catch this automatically next time?
+Karan: I'll set that alert up, no specific deadline but I'll try to get it done this week.
+Eshwari: Last item, we should write up the incident for the wider team. Priya, can you own writing the incident report and share it by next Monday?
+Priya: Monday works for me.
+Eshwari: Thanks everyone, let's make sure the concurrency cap is the top priority.

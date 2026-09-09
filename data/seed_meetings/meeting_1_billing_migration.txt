@@ -1,0 +1,11 @@
+Eshwari: Okay, let's sync on the billing migration. Where are we with moving off the old invoicing service?
+Karan: The new invoicing service is live in staging. I tested about twenty sample invoices and the totals match the old system.
+Eshwari: Good. What's blocking production rollout?
+Karan: Two things. One, we still need to migrate the historical invoice records, about 40,000 rows. Two, the finance team needs to sign off on the new PDF template.
+Eshwari: Karan, can you own the historical data migration and have it done by next Wednesday?
+Karan: Yeah, Wednesday works, I'll write the migration script this week.
+Eshwari: Priya, can you chase finance for sign-off on the PDF template? No hard deadline on that one, just whenever they get to it.
+Priya: Sure, I'll ping them today.
+Eshwari: Last thing, once both of those land we do a phased rollout, ten percent of customers first. Karan, can you also draft the rollout plan document by Friday?
+Karan: Got it, rollout plan by Friday too.
+Eshwari: Great, let's reconvene next week once the migration script is tested.

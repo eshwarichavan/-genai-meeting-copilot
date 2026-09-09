@@ -1,0 +1,11 @@
+Eshwari: This is the design review for the checkout redesign that Sneha flagged last week.
+Sneha: Right, so the main change is collapsing the three-step checkout into a single page. Here's the mockup.
+Karan: I like it, but I'm worried about the payment method selector, it feels cramped on mobile.
+Sneha: Fair point, I'll redo the mobile layout for the payment selector and bring it back next week.
+Eshwari: Sneha, can you have the revised mobile mockup ready by Tuesday so we're not blocking the sprint?
+Sneha: Tuesday's doable.
+Priya: Also, once this ships we should update the help-center article about checkout, it still shows the old three-step flow.
+Eshwari: Priya, can you own updating that help-center article? No rush, just whenever the redesign actually ships.
+Priya: Yep, I'll track it and update it post-launch.
+Eshwari: Good. Sneha, after the mobile fix, go ahead and start building the desktop version, no need to wait for another review round on that part.
+Sneha: Will do.

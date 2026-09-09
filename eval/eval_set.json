@@ -1,0 +1,42 @@
+[
+  {
+    "id": "q1",
+    "question": "What did we decide about the billing migration?",
+    "expected_contains": "Karan"
+  },
+  {
+    "id": "q2",
+    "question": "Who is responsible for the historical invoice data migration and when is it due?",
+    "expected_contains": "Wednesday"
+  },
+  {
+    "id": "q3",
+    "question": "What caused the payments outage on Sunday?",
+    "expected_contains": "retry"
+  },
+  {
+    "id": "q4",
+    "question": "Who owns writing the incident report and by when?",
+    "expected_contains": "Priya"
+  },
+  {
+    "id": "q5",
+    "question": "What was decided about the checkout redesign's mobile payment selector?",
+    "expected_contains": "Tuesday"
+  },
+  {
+    "id": "q6",
+    "question": "What is on the sprint 42 backlog?",
+    "expected_contains": "checkout"
+  },
+  {
+    "id": "q7",
+    "question": "Did we discuss quarterly revenue targets in any meeting?",
+    "expected_contains": "can't find"
+  },
+  {
+    "id": "q8",
+    "question": "Who is chasing finance for sign-off on the invoicing PDF template?",
+    "expected_contains": "Priya"
+  }
+]
