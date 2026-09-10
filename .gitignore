@@ -1,6 +1,9 @@
 # Secrets - never commit your real API key
 .env
 
+# Personal recording-day aid, not part of the graded deliverable
+DEMO_SCRIPT.md
+
 # Python
 __pycache__/
 *.py[cod]
