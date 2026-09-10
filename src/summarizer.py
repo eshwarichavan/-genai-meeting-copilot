@@ -1,10 +1,10 @@
 """Transcript -> structured JSON summary.
 
 Session 2: structured JSON output, grounded in the transcript. Enforced two
-ways -- native schema-constrained output (`output_config.format`) so the API
-itself rejects malformed JSON, plus a one-shot few-shot example so the model
-also learns the *content* shape (which fields to fill vs. leave null), not
-just the syntax.
+ways -- schema-constrained output (`response_format: json_schema`, strict)
+so malformed JSON is rejected before it reaches this code, plus a one-shot
+few-shot example so the model also learns the *content* shape (which fields
+to fill vs. leave null), not just the syntax.
 """
 import json
 import re
@@ -70,12 +70,15 @@ def summarize(meeting_id: str, title: str, date: str, transcript_text: str) -> d
     ]
 
     with timed_stage("llm_ms") as rec:
-        resp = llm.chat(messages, system=SYSTEM_PROMPT, max_tokens=800, response_schema=RESPONSE_SCHEMA)
+        resp = llm.chat(
+            messages, system=SYSTEM_PROMPT, max_tokens=800,
+            response_schema=RESPONSE_SCHEMA, schema_name="meeting_summary",
+        )
         rec["stage_detail"] = "summarize"
-        rec["input_tokens"] = resp.usage.input_tokens
-        rec["output_tokens"] = resp.usage.output_tokens
+        rec["input_tokens"] = resp.usage.prompt_tokens
+        rec["output_tokens"] = resp.usage.completion_tokens
 
-    raw_text = resp.content[0].text.strip()
+    raw_text = resp.choices[0].message.content.strip()
     parsed = _parse_json(raw_text)
     parsed["meeting_id"] = meeting_id
     parsed["title"] = title

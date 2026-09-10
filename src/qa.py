@@ -28,13 +28,13 @@ def answer(question: str) -> dict:
     with timed_stage("llm_ms") as rec:
         rec["stage_detail"] = "qa"
         resp = llm.chat(messages, system=SYSTEM_PROMPT, max_tokens=500)
-        rec["input_tokens"] = resp.usage.input_tokens
-        rec["output_tokens"] = resp.usage.output_tokens
+        rec["input_tokens"] = resp.usage.prompt_tokens
+        rec["output_tokens"] = resp.usage.completion_tokens
 
-    answer_text = "".join(block.text for block in resp.content if block.type == "text")
+    answer_text = resp.choices[0].message.content
     sources = sorted({f"{m['title']} ({m['date']})" for m in metas})
     return {
         "answer": answer_text,
         "sources": sources,
-        "tokens": {"input": resp.usage.input_tokens, "output": resp.usage.output_tokens},
+        "tokens": {"input": resp.usage.prompt_tokens, "output": resp.usage.completion_tokens},
     }

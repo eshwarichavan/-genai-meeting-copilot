@@ -4,8 +4,14 @@ See README.md for the full walkthrough used in the demo recording.
 """
 import argparse
 import json
+import sys
 
 from . import config, pipeline, qa, agent, mcp_client
+
+if sys.platform == "win32":
+    # Default Windows console codepages mangle em-dashes etc. in model output.
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
 
 SEED_META = [
     {"file": "meeting_1_billing_migration.txt", "title": "Billing Migration Sync", "date": "2026-08-04"},

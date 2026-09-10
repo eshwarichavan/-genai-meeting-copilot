@@ -14,7 +14,7 @@ the action items and creates calendar follow-ups through a real MCP tool.
  [ STT: faster-whisper, local, no API key ]           stt_ms
      |
      v
- [ Summarizer: Claude, few-shot -> structured JSON ]  llm_ms
+ [ Summarizer: Claude (via OpenRouter), few-shot -> structured JSON ] llm_ms
      |
      v
  [ Chroma vector store: chunk + embed + upsert ]      (per-meeting)
@@ -24,7 +24,7 @@ the action items and creates calendar follow-ups through a real MCP tool.
    or "I can't find this in the provided context" ]
      |
      v
- [ Router agent: Claude tool-use loop, MAX_ITERATIONS ] llm_ms (per iteration)
+ [ Router agent: tool-calling loop, MAX_ITERATIONS ]   llm_ms (per iteration)
      |         |
      |         +--> write_action_items  --\
      |                                     |--> MCP server (stdio JSON-RPC)  mcp_tool_ms
@@ -50,8 +50,12 @@ pip install -r requirements.txt
 
 copy .env.example .env          # Windows
 # cp .env.example .env          # macOS/Linux
-# then edit .env and set ANTHROPIC_API_KEY
+# then edit .env and set OPENROUTER_API_KEY (get one at https://openrouter.ai/keys)
 ```
+
+LLM calls go through [OpenRouter](https://openrouter.ai)'s OpenAI-compatible
+API rather than a provider-native SDK, and default to `anthropic/claude-haiku-4.5`
+(configurable via `OPENROUTER_MODEL` in `.env`) -- see `DESIGN_NOTE.md` for why.
 
 First run downloads two small models automatically (needs internet once):
 a `faster-whisper` "base" STT model (~140MB) and Chroma's default embedding
@@ -106,12 +110,12 @@ involved) to `logs/run_log.jsonl` and prints a one-line summary, e.g.:
 
 | Session | Where |
 |---|---|
-| 1. Foundations | `src/config.py` (API key from env, never committed), `src/llm.py` (hand-managed `messages` array, deliberately chosen `effort` -- this model family's current replacement for `temperature`, see `DESIGN_NOTE.md`) |
-| 2. Prompting | `src/summarizer.py` (native JSON-schema-constrained output + a few-shot example) |
+| 1. Foundations | `src/config.py` (API key from env, never committed), `src/llm.py` (hand-managed `messages` array, deliberately chosen low `temperature`) |
+| 2. Prompting | `src/summarizer.py` (schema-constrained JSON output + a few-shot example) |
 | 3. RAG | `src/vector_store.py` (chunking, embeddings, Chroma), `src/qa.py` (top-k retrieval, cited grounded answers) |
-| 4. Agents | `src/agent.py` (tool-use loop, correct `tool_use_id` handling, every call logged, `MAX_ITERATIONS` cap) |
+| 4. Agents | `src/agent.py` (tool-calling loop, correct `tool_call_id` handling, every call logged, `MAX_ITERATIONS` cap) |
 | 5. Architectures | Sequential pipeline (`src/pipeline.py`) + Router (`src/agent.py`) -- see `DESIGN_NOTE.md` |
-| 6. MCP | `src/mcp_server.py` (FastMCP tools) + `src/mcp_client.py` (real stdio JSON-RPC client, not a direct function call) |
+| 6. MCP | `src/mcp_server.py` (MCP tools) + `src/mcp_client.py` (real stdio JSON-RPC client, not a direct function call) |
 | 7. Audio/Visual | `src/stt.py` (faster-whisper), latency logged via `logging_utils.timed_stage` |
 
 ## Safety

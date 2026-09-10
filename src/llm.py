@@ -1,47 +1,57 @@
-"""Thin wrapper around the Anthropic client.
+"""Thin wrapper around the OpenAI-compatible client, pointed at OpenRouter.
 
 Deliberately thin: every caller builds and owns its own `messages` array
 (Session 1 requirement) instead of hiding it behind a framework abstraction.
-
-Note: the current Messages API for this model family has no `temperature`
-parameter (confirmed by calling it directly -- see DESIGN_NOTE.md). Its
-replacement determinism knob is `output_config.effort`; structured JSON
-output is native via `output_config.format` (a json_schema), rather than
-prompt-only JSON instructions.
+Routed through OpenRouter rather than a provider-native SDK because that is
+the credential actually available for this project -- see DESIGN_NOTE.md.
+Still defaults to a Claude model (`anthropic/claude-haiku-4.5`), just reached
+through OpenRouter's OpenAI-compatible chat.completions API, which is why the
+`messages`/`tools`/`response_format` shapes below are OpenAI-style rather
+than Anthropic-native content blocks.
 """
-import anthropic
+from openai import OpenAI
 
 from . import config
 
 _client = None
 
 
-def _get_client() -> anthropic.Anthropic:
+def _get_client() -> OpenAI:
     global _client
     if _client is None:
-        if not config.ANTHROPIC_API_KEY:
+        if not config.OPENROUTER_API_KEY:
             raise RuntimeError(
-                "ANTHROPIC_API_KEY is not set. Copy .env.example to .env and fill it in."
+                "OPENROUTER_API_KEY is not set. Copy .env.example to .env and fill it in."
             )
-        _client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
+        default_headers = {}
+        if config.OPENROUTER_SITE_URL:
+            default_headers["HTTP-Referer"] = config.OPENROUTER_SITE_URL
+        if config.OPENROUTER_APP_NAME:
+            default_headers["X-Title"] = config.OPENROUTER_APP_NAME
+        _client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=config.OPENROUTER_API_KEY,
+            default_headers=default_headers or None,
+        )
     return _client
 
 
 def chat(messages, system: str | None = None, tools: list | None = None,
-         max_tokens: int = 1024, effort: str | None = None,
-         response_schema: dict | None = None):
-    output_config: dict = {"effort": config.CLAUDE_EFFORT if effort is None else effort}
-    if response_schema:
-        output_config["format"] = {"type": "json_schema", "schema": response_schema}
+         max_tokens: int = 1024, temperature: float | None = None,
+         response_schema: dict | None = None, schema_name: str = "response"):
+    full_messages = ([{"role": "system", "content": system}] if system else []) + messages
 
     kwargs = dict(
-        model=config.CLAUDE_MODEL,
+        model=config.OPENROUTER_MODEL,
+        messages=full_messages,
         max_tokens=max_tokens,
-        messages=messages,
-        output_config=output_config,
+        temperature=config.TEMPERATURE if temperature is None else temperature,
     )
-    if system:
-        kwargs["system"] = system
     if tools:
         kwargs["tools"] = tools
-    return _get_client().messages.create(**kwargs)
+    if response_schema:
+        kwargs["response_format"] = {
+            "type": "json_schema",
+            "json_schema": {"name": schema_name, "strict": True, "schema": response_schema},
+        }
+    return _get_client().chat.completions.create(**kwargs)

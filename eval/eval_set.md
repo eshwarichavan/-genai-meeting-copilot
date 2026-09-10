@@ -19,16 +19,20 @@ happened to miss, and a "PASS" row could in theory cite the wrong meeting.
 
 | # | Question | Expected outcome | Got it right? |
 |---|----------|-------------------|----------------|
-| q1 | What did we decide about the billing migration? | Mentions Karan owning the historical data migration + rollout plan | |
-| q2 | Who owns the historical invoice data migration and when is it due? | Karan, by Wednesday | |
-| q3 | What caused the payments outage on Sunday? | Retry logic had no global concurrency cap | |
-| q4 | Who owns writing the incident report and by when? | Priya, by Monday | |
-| q5 | What was decided about the checkout redesign's mobile payment selector? | Sneha reworking mobile layout, due Tuesday | |
-| q6 | What is on the sprint 42 backlog? | Checkout redesign, payments retry logic, notifications cleanup | |
-| q7 | Did we discuss quarterly revenue targets in any meeting? | Not present anywhere -> system should say it can't find this in context | |
-| q8 | Who is chasing finance sign-off on the PDF template? | Priya | |
+| q1 | What did we decide about the billing migration? | Mentions Karan owning the historical data migration + rollout plan | Yes -- also correctly added Priya/PDF-template and the 10% phased rollout, all cited |
+| q2 | Who owns the historical invoice data migration and when is it due? | Karan, by Wednesday | Yes |
+| q3 | What caused the payments outage on Sunday? | Retry logic had no global concurrency cap | Yes -- correctly distinguished per-request backoff (existed) from global concurrency cap (missing) |
+| q4 | Who owns writing the incident report and by when? | Priya, by Monday | Yes |
+| q5 | What was decided about the checkout redesign's mobile payment selector? | Sneha reworking mobile layout, due Tuesday | Yes |
+| q6 | What is on the sprint 42 backlog? | Checkout redesign, payments retry logic, notifications cleanup | Yes, all three listed |
+| q7 | Did we discuss quarterly revenue targets in any meeting? | Not present anywhere -> system should say it can't find this in context | Yes -- correctly refused instead of guessing |
+| q8 | Who is chasing finance sign-off on the PDF template? | Priya | Yes |
 
-**Score: _/8** (fill in after you run it)
+**Score: 8/8** (run via `anthropic/claude-haiku-4.5` over OpenRouter, 2026-09-10)
+
+Every answer also cited the correct meeting title + date, which the
+heuristic substring check above doesn't verify but I confirmed by reading
+`eval/eval_results.json` directly.
 
 If you added your own real recording, add 1-2 questions about it here and
 re-run `eval` after adding them to `eval_set.json`.

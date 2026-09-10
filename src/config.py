@@ -4,7 +4,10 @@ import pathlib
 
 from dotenv import load_dotenv
 
-load_dotenv()
+# override=True: .env is the source of truth for this project's own keys,
+# so a stray placeholder already sitting in the shell environment can't
+# silently shadow the real key a developer put in .env.
+load_dotenv(override=True)
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -16,13 +19,16 @@ SEED_MEETINGS_DIR = DATA_DIR / "seed_meetings"
 CHROMA_DIR = BASE_DIR / os.getenv("CHROMA_DIR", "chroma_db")
 
 # Session 1: API key lives only in the environment, never in source.
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-haiku-4-5-20251001")
-# The current Messages API for this model family has no `temperature` param;
-# `effort` is its replacement sampling/determinism knob (see DESIGN_NOTE.md).
+# LLM calls are routed through OpenRouter's OpenAI-compatible API (the
+# credential available for this project) rather than a provider-native SDK.
+# See DESIGN_NOTE.md for why.
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "anthropic/claude-haiku-4.5")
+OPENROUTER_SITE_URL = os.getenv("OPENROUTER_SITE_URL", "")
+OPENROUTER_APP_NAME = os.getenv("OPENROUTER_APP_NAME", "meeting-notes-copilot")
 # Chosen deliberately low: summarization/extraction and the action agent both
 # need consistent, non-creative output, not exploration.
-CLAUDE_EFFORT = os.getenv("CLAUDE_EFFORT", "low")
+TEMPERATURE = float(os.getenv("CLAUDE_TEMPERATURE", "0.2"))
 
 WHISPER_MODEL_SIZE = os.getenv("WHISPER_MODEL_SIZE", "base")
 

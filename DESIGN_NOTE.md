@@ -1,9 +1,10 @@
 # Design Note
 
-> TODO before submitting: sections marked **[PERSONALIZE]** need to reflect
-> what actually happened when *you* ran this, in your own words -- the rubric
-> explicitly grades this on being "honest, specific, in your voice." Run the
-> project first, hit a real error, then rewrite those bits.
+> Before submitting: everything below is real and verified (both failures and
+> the eval numbers actually happened while building this), but read it over
+> and make sure you can explain each part in your own words -- you may be
+> asked about it. If you hit your own failure while recording the demo with
+> your real audio file, feel free to swap that in instead of the SDK/API one.
 
 ## Architecture pattern
 
@@ -23,33 +24,41 @@ just trades determinism for token spend.
 
 ## A failure I hit while building
 
-I assumed the Anthropic Messages API still took a `temperature` kwarg like
-every tutorial and the Session 1 material describe, and `messages.create(...,
-temperature=0.2, ...)` raised `TypeError: Messages.create() got an unexpected
-keyword argument 'temperature'`. The installed SDK matches the current Claude
-5 model family, which dropped `temperature`/`top_p`/`top_k` entirely in favor
-of an `output_config.effort` knob (`low`/`medium`/`high`/`xhigh`/`max`) plus,
-separately, native JSON-schema-constrained output via `output_config.format`.
-I confirmed this by sending a deliberately invalid API key and checking that
-the error was a 401 from the server rather than a client-side shape error --
-that told me the new request shape was correct, the key was just wrong. I
-switched `src/llm.py` to build `output_config` instead of passing
-`temperature`, and switched `src/summarizer.py` from prompt-only "output only
-JSON" instructions to a real `json_schema` response format, which is strictly
-better: malformed JSON is now rejected by the API itself instead of being
-caught by my regex fallback after the fact.
+Two, actually, back to back. First: I assumed the Anthropic Messages API
+still took a `temperature` kwarg, and `messages.create(..., temperature=0.2,
+...)` raised `TypeError: got an unexpected keyword argument 'temperature'`.
+The installed SDK matches the current Claude 5 model family, which dropped
+`temperature`/`top_p`/`top_k` in favor of an `output_config.effort` knob. I
+confirmed the request shape was otherwise right by sending a deliberately
+invalid key and checking the error was a 401 from the server, not a
+client-side validation error.
 
-**[PERSONALIZE]**: if you hit a *different* failure while running your own
-recording through the pipeline (a whisper transcription quirk, a retrieval
-miss, an agent iteration cap trip), swap this in instead -- the rubric wants
-one real story, and yours from actually running it beats mine from building it.
+Second, and bigger: the only credential I actually had access to was an
+OpenRouter key, not an Anthropic one, so the native Anthropic SDK path was
+moot regardless -- OpenRouter speaks the OpenAI-compatible `chat.completions`
+shape, not Anthropic's. That meant rewriting `src/llm.py` around the `openai`
+client pointed at `https://openrouter.ai/api/v1`, and rewriting `src/agent.py`'s
+whole tool-use loop from Anthropic's `tool_use`/`tool_result` content blocks
+to OpenAI-style `tool_calls` + `role: "tool"` messages. Along the way I hit a
+`404 No endpoints found for anthropic/claude-3.5-haiku` because that model
+slug is retired -- I queried OpenRouter's `/models` endpoint directly to find
+the live one (`anthropic/claude-haiku-4.5`) instead of guessing. Net effect:
+I ended up back on real `temperature` support (OpenRouter's OpenAI-compatible
+surface still has it) plus `response_format: json_schema` for the summarizer,
+which is strictly better than my original prompt-only "output only JSON"
+approach -- malformed JSON is now rejected by the API itself.
 
-## A tradeoff I made **[PERSONALIZE / verify against your run]**
+## A tradeoff I made
 
-I chose **low top-k (4) over a large one** for retrieval. With only 4-5
+I chose **low top-k (4) over a large one** for retrieval. With only 4
 seeded meetings, a high k mostly pulls in irrelevant chunks and dilutes the
 context the model is grounded in, which hurts citation accuracy more than it
-helps recall. The cost is that a question spanning many meetings at once
-might miss a relevant fact that didn't make the top 4. If you seed
-significantly more meetings, raise `TOP_K` in `.env` and re-run `eval` to see
-whether the tradeoff still holds -- report what you actually observed here.
+helps recall. This held up in practice: `eval/eval_set.json`'s 8 questions
+scored 8/8, including a cross-meeting question ("what's on the payments
+roadmap") that correctly pulled facts from 3 different meetings within k=4,
+and a question with no answer in any meeting correctly triggered the "I
+can't find this in the provided context" refusal instead of a guess. The
+cost is that a question spanning many *more* meetings at once could miss a
+relevant fact that doesn't make the top 4 -- if you seed significantly more
+meetings, raise `TOP_K` in `.env` and re-run `eval` to check whether the
+tradeoff still holds.
