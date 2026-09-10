@@ -5,6 +5,10 @@ speech-to-text -> structured JSON summary -> a vector store that builds up
 over time -> grounded Q&A across every past meeting -> an agent that files
 the action items and creates calendar follow-ups through a real MCP tool.
 
+**Demo recording**: [`demo_recording.mp4`](./demo_recording.mp4) (5:04) -- a
+full end-to-end run narrated live, including the real audio recording below
+actually being transcribed.
+
 ## Architecture
 
 ```
